@@ -1,0 +1,25 @@
+#Pretty basic. This is just a file of rules that I use with ESP Easy.
+
+
+#Send temperature data to Nagios via a passive service check to NRDP
+#The sendToHTTP has a bunch of variables encapsulated in < >. Change those to suit your environment.
+#Towards the end of sendToHTTP are temperature variables for the ESP chip. I use this for basic temp monitoring,
+#but oviously if you're using something else, like a humidity sensor, change as needed.
+#The passive check result includes perf data, so if you're using Nagios XI or PNP4Nagios, you'll get performance graphs
+
+#Begin ESP Easy Rule
+On System#Boot do
+  timerSet,1,30
+endon
+
+On remoteTimerControl do
+  timerSet,1,%eventvalue%
+endon
+
+On Rules#Timer=1 do
+  Pulse,2,5,100
+  sendToHTTP <IPADDRESS>,<PORT-Probably 80>,"/nrdp/?cmd=submitcheck&token=<NRDP-AUTH-TOKEN>&json=%7B%22checkresults%22%3A%5B%7B%22checkresult%22%3A%7B%22type%22%3A%22service%22%7D%2C%22hostname%22%3A%22<HOSTNAME-IN-NAGIOS>%22%2C%22servicename%22%3A%22<SERVICENAME-IN-NAGIOS>%22%2C%22state%22%3A%220%22%2C%22output%22%3A%22OK%3ATemp%20is%20[Temp#Temperature]%7C%20Temperature%3D[Temp#Temperature]%22%7D%5D%7D"
+  timerSet,1,30
+endon
+
+#End ESP Easy Rule
